@@ -31,8 +31,9 @@ func dataUriScheme(file os.File) string {
 	return fmt.Sprintf(DATA_URI_SCHEME_TEMPLATE, ext)
 }
 
-func encode(filePath string, isPlain bool) {
+func encode(filePath string, isPlain bool, noRet bool) {
 	scheme := ""
+	ret := "\n"
 
 	file, err := os.OpenFile(filePath, os.O_RDONLY, 0)
 
@@ -49,11 +50,16 @@ func encode(filePath string, isPlain bool) {
 		scheme = dataUriScheme(*file)
 	}
 
-	fmt.Printf("%s%s\n", scheme, base64encode(*file))
+	if noRet {
+		ret = ""
+	}
+
+	fmt.Printf("%s%s%s", scheme, base64encode(*file), ret)
 }
 
 func main() {
 	var isPlainFormat bool
+	var noRet bool
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage of %s:
@@ -65,6 +71,7 @@ Options
 		flag.PrintDefaults()
 	}
 	flag.BoolVar(&isPlainFormat, "p", false, "output with plain format")
+	flag.BoolVar(&noRet, "n", false, "without line break")
 	flag.Parse()
 
 	if flag.NArg() != MAX_NOT_FLAG_COUNT {
@@ -72,5 +79,5 @@ Options
 		os.Exit(1)
 	}
 
-	encode(flag.Arg(0), isPlainFormat)
+	encode(flag.Arg(0), isPlainFormat, noRet)
 }
