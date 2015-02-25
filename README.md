@@ -12,7 +12,7 @@ $ go get -u github.com/inotom/duencode
 
 ```
 $ duencode sample.jpg
-data:image/jpg;base64,/9j/4AAQSkZJRgABAQ...
+data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ...
 ```
 
 -p flag is outputting plain format. (without data uri scheme)
