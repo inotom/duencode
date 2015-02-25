@@ -5,30 +5,28 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
-const DATA_URI_SCHEME_TEMPLATE = "data:image/%s;base64,"
+const DATA_URI_SCHEME_TEMPLATE = "data:%s;base64,"
 const MAX_NOT_FLAG_COUNT = 1
 
-// encoding to base64 data from image file
-func base64encode(file os.File) string {
+// read []byte data from file
+func readFileData(file os.File) []byte {
 	fi, _ := file.Stat()
 	size := fi.Size()
 
 	data := make([]byte, size)
 	file.Read(data)
 
-	return base64.StdEncoding.EncodeToString(data)
+	return data
 }
 
-// make data uri scheme string from file extention
-func dataUriScheme(file os.File) string {
-	fi, _ := file.Stat()
-	ext := strings.Trim(filepath.Ext(fi.Name()), ".")
-	return fmt.Sprintf(DATA_URI_SCHEME_TEMPLATE, ext)
+// make data uri scheme string from file data
+func dataUriScheme(data []byte) string {
+	mimeType := http.DetectContentType(data)
+	return fmt.Sprintf(DATA_URI_SCHEME_TEMPLATE, mimeType)
 }
 
 func encode(filePath string, isPlain bool, noRet bool) {
@@ -46,15 +44,17 @@ func encode(filePath string, isPlain bool, noRet bool) {
 		file.Close()
 	}()
 
+	data := readFileData(*file)
+
 	if !isPlain {
-		scheme = dataUriScheme(*file)
+		scheme = dataUriScheme(data)
 	}
 
 	if noRet {
 		ret = ""
 	}
 
-	fmt.Printf("%s%s%s", scheme, base64encode(*file), ret)
+	fmt.Printf("%s%s%s", scheme, base64.StdEncoding.EncodeToString(data), ret)
 }
 
 func main() {
